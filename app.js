@@ -10,7 +10,10 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 
+//team member blank array to push employees onto
 const teamMember = [];
+
+
 //build manager function
 function managerRole() {
     inquirer
@@ -144,8 +147,7 @@ function addAnotherEmployee() {
                 internRole();
             } else {
                 console.log(teamMember);
-                fs.existsSync(OUTPUT_DIR) || fs.mkdirSync(OUTPUT_DIR);
-                fs.writeFileSync(outputPath, render(teamMember), "utf8");
+                render();
             }
         })
 

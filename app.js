@@ -11,7 +11,7 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 const render = require("./lib/htmlRenderer");
 
 //team member blank array to push employees onto
-const teamMember = [];
+const teamMembers = [];
 
 
 //build manager function
@@ -45,121 +45,95 @@ function managerRole() {
                 manager.managerEmail,
                 manager.managerOfficeNumber
             );
-            teamMember.push(manager);
+            teamMembers.push(manager);
+            teamMemberGenerator();
         })
-    addAnotherEmployee();
 }
-//Engineer Role
-function engineerRole() {
+
+
+//Team Member Generator 
+function teamMemberGenerator() {
     inquirer
         .prompt([{
-                type: "confirm",
-                name: "engineerRole",
-                message: "Do you wish to add an engineer to this team?",
+                type: "list",
+                name: "employeeType",
+                message: "Do you want to add an engineer, intern, or complete your team?",
+                choices: ["Engineer", "Intern"]
+            },
+            //Name,ID,Email same for both team members
+            {
+                type: "input",
+                name: "memberName",
+                message: "What is the team member's name?",
             },
             {
                 type: "input",
-                name: "engineerName",
-                message: "What is the engineer's name?",
+                name: "memberID",
+                message: "What is the team member's ID number?",
             },
             {
                 type: "input",
-                name: "engineerID",
-                message: "What is the engineer's ID number?",
+                name: "memberEmail",
+                message: "What is the team member's email address?"
             },
-            {
-                type: "input",
-                name: "engineerEmail",
-                message: "What is the engineer's email address?"
-            },
+            //When engineer selected
             {
                 type: "input",
                 name: "engineerGitHub",
-                message: "What is the engineer's Github link and/or username?"
+                message: "What is the engineer's Github link and/or username?",
+                when: (userInput) => userInput.nextTeamMember === "Engineer",
             },
-        ])
-        .then((engineer) => {
-            teamMember.push(
-                new Engineer(
-                    engineer.engineerName,
-                    engineer.engineerEmail,
-                    engineer.engineerID,
-                    engineer.engineerGitHub,
-                )
-            )
-        })
-    addAnotherEmployee();
-}
-
-//intern function
-function internRole() {
-    inquirer
-        .prompt([{
-                type: "input",
-                name: "internName",
-                message: "What is the intern's name?",
-            },
-            {
-                type: "input",
-                name: "internID",
-                message: "What is the intern's ID Number?",
-            },
-            {
-                type: "input",
-                name: "internEmail",
-                message: "What is the intern's email?",
-            },
+            //when intern selected
             {
                 type: "input",
                 name: "internSchool",
                 message: "What school does the intern attend?",
+                when: (userInput) => userInput.nextTeamMember === "Intern",
             }
         ])
-        .then((intern) => {
-            teamMember.push(
-                new Intern(
-                    intern.internName,
-                    intern.InternID,
-                    intern.internEmail,
-                    intern.internSchool,
+
+    .then((teamMember) => {
+        if (teamMember.employeeType === "Engineer") {
+            teamMembers.push(
+                new Engineer(
+                    teamMember.memberName,
+                    teamMember.memberEmail,
+                    teamMember.memberID,
+                    teamMember.engineerGitHub,
                 )
-            )
-        })
-    addAnotherEmployee();
+            );
+        } else {
+            teamMembers.push(
+                new Intern(
+                    teamMember.memberName,
+                    teamMember.memberID,
+                    teamMember.memberEmail,
+                    teamMember.internSchool
+                )
+            );
+        }
+        //function to loop background after inital team member is added
+        addTeamMember();
 
+    });
 }
-
 
 // function to loop back around team members
-function addAnotherEmployee() {
+function addTeamMember() {
     inquirer
         .prompt([{
-            type: "list",
-            name: "nextTeamMember",
-            message: "Do you want to add an engineer, intern, or complete your team?",
-            choices: ["Engineer", "Intern", "End"]
+            type: "confirm",
+            name: "newTeamMember",
+            message: "Do you wish to add another team member(y or n)?",
         }, ])
-        .then((list) => {
-            if (list.choices = "Engineer") {
-                engineerRole();
-            }
-            if (list.choices = "intern") {
-                internRole();
+        .then((confirm) => {
+            if (confirm.newTeamMember) {
+                teamMemberGenerator();
             } else {
-                console.log(teamMember);
-                render();
+                console.log(teamMembers)
+                fs.existsSync(OUTPUT_DIR) || fs.mkdirSync(OUTPUT_DIR);
+                fs.writeFileSync(outputPath, render(teamMembers), "utf8")
             }
         })
-
 }
-
-
-// After the user has input all employees desired, call the `render` function (required
-// above) and pass in an array containing all employee objects; the `render` function will
-// generate and return a block of HTML including templated divs for each employee!
-
-// After you have your html, you're now ready to create an HTML file using the HTML
-// returned from the `render` function. Now write it to a file named `team.html` in the
-// `output` folder. You can use the variable `outputPath` above target this location.
-// Hint: you may need to check if the `output` folder exists and create it if it
-// does not.
+managerRole();

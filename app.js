@@ -81,14 +81,14 @@ function teamMemberGenerator() {
                 type: "input",
                 name: "engineerGitHub",
                 message: "What is the engineer's Github link and/or username?",
-                when: (userInput) => userInput.nextTeamMember === "Engineer",
+                when: (userInput) => userInput.employeeType === "Engineer",
             },
             //when intern selected
             {
                 type: "input",
                 name: "internSchool",
                 message: "What school does the intern attend?",
-                when: (userInput) => userInput.nextTeamMember === "Intern",
+                when: (userInput) => userInput.employeeType === "Intern",
             }
         ])
 
